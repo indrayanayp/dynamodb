@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "paths": {
+    "/ta2122": {
+      "name": "/ta2122",
+      "lambdaFunction": "ta2122",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    }
+  }
+}

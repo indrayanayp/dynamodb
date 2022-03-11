@@ -1,0 +1,14 @@
+{
+  "resourceName": "ta2122resource",
+  "policyUUID": "64a5d006",
+  "bucketName": "ta2122bucket",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "S3Triggerf1c1e2fd",
+  "groupAccess": {}
+}
