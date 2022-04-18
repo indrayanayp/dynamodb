@@ -36,8 +36,9 @@ public class RecordingListAdapter extends ArrayAdapter<Recording> {
         String date = getItem(position).getDate();
         String time = getItem(position).getTime();
         String avgHR = getItem(position).getAvgHR();
+        Long sortnumber = Long.valueOf(1);
 
-        Recording recording = new Recording(date, time, avgHR);
+        Recording recording = new Recording(date, time, avgHR, sortnumber);
 
         final View result;
         ViewHolder holder;

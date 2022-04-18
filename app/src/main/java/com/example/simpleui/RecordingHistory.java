@@ -52,6 +52,7 @@ public class RecordingHistory extends AppCompatActivity {
         AutoCompleteTextView auto = findViewById(R.id.autoCompleteTextView);
         Button button = findViewById(R.id.button3);
 
+
         globalVariable globalVariable = com.example.simpleui.globalVariable.getInstance();
 
         Calendar calendar = Calendar.getInstance();
@@ -107,7 +108,8 @@ public class RecordingHistory extends AppCompatActivity {
                 dateparameter = year_now;
             }
 
-            retrievedData = ScanningDynamoDB(globalVariable.getUsername_global(), dateparameter);
+            //retrievedData = ScanningDynamoDB(globalVariable.getUsername_global(), dateparameter);
+            retrievedData = ScanningDynamoDB("igedeindrayana1", dateparameter);
 
             while (retrievedData[0].equals("init")){
                 Log.i("MyAmplifyApp", "Stuck in loop");
@@ -122,12 +124,28 @@ public class RecordingHistory extends AppCompatActivity {
                 recordingSummary.setText("Heart rate recording history: ");
                 continuing = true;
                 ArrayList<Recording> scannedData = new ArrayList<>();
+                int count = 0;
                 for (int i = 0; i < retrievedData.length-1; i = i+3){
-                    Recording data = new Recording("Date: " + retrievedData[i], "Time: " + retrievedData[i+1], retrievedData[i+2] + " BPM");
+                    String datestring = retrievedData[i].replace("-", "");
+                    String timestring = retrievedData[i+1].replace(":", "");
+                    String sortstring = datestring + timestring;
+                    Long sortnumber = Long.parseLong(sortstring);
+
+                    Recording data = new Recording("Date: " + retrievedData[i], "Time: " + retrievedData[i+1], retrievedData[i+2] + " BPM", sortnumber);
                     scannedData.add(data);
-                    RecordingListAdapter adapter = new RecordingListAdapter(this, R.layout.adapter_view_layout, scannedData);
-                    mListView.setAdapter(adapter);
+                    count++;}
+                for (int i = 0; i < count - 1 ; i++){
+                    for (int j = 0; j < count - i - 1; j++){
+                        if (scannedData.get(j).getSortNumber() < scannedData.get(j + 1).getSortNumber()) {
+                            Recording temp = scannedData.get(j);
+                            scannedData.set(j, scannedData.get(j + 1));
+                            scannedData.set(j + 1, temp);
+                        }
+                    }
                 }
+                RecordingListAdapter adapter = new RecordingListAdapter(this, R.layout.adapter_view_layout, scannedData);
+                mListView.setAdapter(adapter);
+
             }
         });
 
@@ -140,6 +158,7 @@ public class RecordingHistory extends AppCompatActivity {
                     Log.i("MyAmplifyApp", date_search + " " + time_search);
                     globalVariable.setDate_global(date_search);
                     globalVariable.setTime_global(time_search);
+                    globalVariable.setUsername_global("igedeindrayana1");
                     Intent intent = new Intent(RecordingHistory.this, ShowHistory.class);
                     startActivity(intent);
                 }
@@ -190,13 +209,17 @@ public class RecordingHistory extends AppCompatActivity {
         }
 
         //Fungsi untuk upload file
-        private void uploadFile (String filename, File exampleFile){
+        public String uploadFile (String filename, File exampleFile){
+        String resultofuploadfile[] = new String[1];
             Amplify.Storage.uploadFile(
                     filename,
                     exampleFile,
-                    result -> Log.i("MyAmplifyApp", "Successfully uploaded: " + result.getKey()),
-                    storageFailure -> Log.e("MyAmplifyApp", "Upload failed", storageFailure)
+                    result -> {Log.i("MyAmplifyApp", "Successfully uploaded: " + result.getKey());
+                        resultofuploadfile[0] = "Success";},
+                    storageFailure -> {Log.e("MyAmplifyApp", "Upload failed", storageFailure);
+                        resultofuploadfile[0] = "Failed";}
             );
+            return resultofuploadfile[0];
         }
 
         public void UploadDataToDynamoDB (String Username, String Date, String Time, String
@@ -247,7 +270,7 @@ public class RecordingHistory extends AppCompatActivity {
                             result[i*3+1] = time;
                             result[i*3+2] = averageHR;
                             count++;
-                            Log.i("MyAmplifyApp", "Yes!" + time);
+                            Log.i("MyAmplifyApp", "Succesful! Date: " + date + ", Time: " + time + ", Average HR: " + averageHR);
                         }
                         ScanningDynamoDBOutput = "Ok";
                     } catch (Throwable t) {
@@ -351,4 +374,81 @@ public class RecordingHistory extends AppCompatActivity {
             Log.i("MyAmplifyApp", scanOutput[0]);
             return scanOutput[0];
         }
+
+    public String[] GettingFromDynamoDB (String Username, String Date, String Time){
+        String date, time, AvgHR, AvgRestHR, MaxHR, MinHR, Duration, Abnormalities;
+        String getOutput = GetFromDynamoDBTable(Username, Date, Time);
+        String GettingFromDynamoDBOutput;
+        String[] result = new String[8];
+        Log.i("MyAmplifyApp", "Masuk ke Getting");
+        if (getOutput.equals("{}")) {
+            Log.i("MyAmplifyApp", "Tidak ada data yang ditemukan.");
+            result[0] = "0";
+        } else {
+            try {
+                JSONObject getResult = new JSONObject(getOutput);
+                GettingFromDynamoDBOutput = getResult.getString("data");
+                try {
+                    JSONObject json = new JSONObject(GettingFromDynamoDBOutput);
+                    date = json.getString("Date");
+                    time = json.getString("Time");
+                    AvgHR = json.getString("AvgHR");
+                    AvgRestHR = json.getString("AvgRestHR");
+                    MaxHR = json.getString("MaxHR");
+                    MinHR = json.getString("MinHR");
+                    Duration = json.getString("Duration");
+                    Abnormalities = json.getString("Abnormalities");
+                    Log.i("MyAmplifyApp", date + " " + time + " " + AvgHR + " " + AvgRestHR + " " + MaxHR + " " + MinHR + " " + " " + Duration + " " + Abnormalities);
+                    result[0] = date;
+                    result[1] = time;
+                    result[2] = AvgHR;
+                    result[3] = AvgRestHR;
+                    result[4] = MaxHR;
+                    result[5] = MinHR;
+                    result[6] = Duration;
+                    result[7] = Abnormalities;
+                } catch (Throwable t) {
+                    GettingFromDynamoDBOutput = "Failed";
+                    result[0] = "-99";
+                }
+            } catch (Throwable t) {
+                GettingFromDynamoDBOutput = "Failed";
+                result[0] = "-99";
+            }
+            if (GettingFromDynamoDBOutput.equals("Failed")) {
+                Log.e("MyAmplifyApp", "GET gagal.");
+            }
+        }
+        Log.i("MyAmplifyApp", "Keluar dari Getting");
+        return result;
     }
+
+    public String GetFromDynamoDBTable (String Username, String Date, String Time){
+        RestOptions options = RestOptions.builder()
+                .addPath("/ta2122")
+                .addQueryParameters(Collections.singletonMap("Username", Username))
+                .addQueryParameters(Collections.singletonMap("Date", Date))
+                .addQueryParameters(Collections.singletonMap("Time", Time))
+                .build();
+
+        String[] getOutput = {"Null"};
+
+        Amplify.API.get(options,
+                response -> {
+                    Log.i("MyAmplifyApp", "GET succeeded");
+                    String str = response.getData().asString();
+                    getOutput[0] = str;
+                },
+                error -> {
+                    Log.e("MyAmplifyApp", "GET failed.", error);
+                    getOutput[0] = "Failed";
+                }
+        );
+
+        while (getOutput[0].equals("Null")) {
+            Log.i("MyAmplifyApp", "Stuck in loop of GetData");
+        } //Wait until function finishes
+
+        return getOutput[0];
+    }
+}

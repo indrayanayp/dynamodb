@@ -4,11 +4,13 @@ public class Recording {
         private String date;
         private String time;
         private String avgHR;
+        private Long sortnumber;
 
-        public Recording(String date, String time,  String avgHR) {
+        public Recording(String date, String time,  String avgHR, Long sortnumber) {
             this.date = date;
             this.time = time;
             this.avgHR = avgHR;
+            this.sortnumber = sortnumber;
         }
 
         public String getDate() {
@@ -34,5 +36,14 @@ public class Recording {
         public void setAvgHR(String avgHR) {
             this.avgHR = avgHR;
         }
+
+        public Long getSortNumber() {
+        return sortnumber;
+    }
+
+        public void setSortNumber(String sortNumber) {
+        this.sortnumber = sortnumber;
+    }
+
 
 }

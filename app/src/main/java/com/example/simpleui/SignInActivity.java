@@ -72,7 +72,7 @@ public class SignInActivity extends AppCompatActivity {
             handler.postDelayed(() -> {
                 if (signedin){
                     globalVariable globalVariable = com.example.simpleui.globalVariable.getInstance();
-                    globalVariable.setUsername_global("indrayanayp");
+                    globalVariable.setUsername_global("igedeindrayana1");
                     Intent intent = new Intent(SignInActivity.this, RecordingHistory.class);
                     startActivity(intent);
                     }

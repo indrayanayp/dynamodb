@@ -24,7 +24,7 @@ import java.util.Collections;
 public class ShowHistory extends AppCompatActivity {
 TextView RD, ST, AHR, ARHR, MHR, MIHR, AD, RDU;
 Button Download;
-String username = "indrayanayp";
+String username = "igedeindrayana1";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
